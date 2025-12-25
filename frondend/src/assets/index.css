@@ -1,0 +1,59 @@
+/* 1. Nhập Font Quicksand */
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+
+/* 2. Khai báo Tailwind */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 3. Cấu hình chung cho toàn trang */
+body {
+  font-family: 'Quicksand', sans-serif;
+  background-color: #FFFFFF;
+  color: #181821; /* Màu đen đậm chuẩn thiết kế */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 4. Tùy chỉnh thanh cuộn (Scrollbar) cho đẹp */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F1F1;
+}
+::-webkit-scrollbar-thumb {
+  background: #AAB5C3; /* Màu xám lấy từ nền trang Login */
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #009FFF; /* Hover đổi màu xanh chủ đạo */
+}
+
+/* 5. CÁC CLASS CHUẨN THIẾT KẾ (Dùng cái này để code gọn hơn) */
+@layer components {
+  
+  /* Ô NHẬP LIỆU (Input) - Chuẩn file dang ki.txt */
+  /* Cao 50px, Viền 3px đen, Bo góc 10px */
+  .input-field {
+    @apply w-full h-[50px] px-4 bg-white border-[3px] border-[#181821] rounded-[10px] outline-none font-semibold text-[16px] text-[#181821] placeholder-gray-400 focus:border-[#009FFF] transition-colors;
+  }
+
+  /* NÚT CHÍNH (Primary Button) - Chuẩn file dangnhap.txt */
+  /* Màu xanh 009FFF, Chữ trắng Bold, Bo góc 10px */
+  .btn-primary {
+    @apply h-[50px] bg-[#009FFF] text-white font-bold text-[16px] rounded-[10px] hover:bg-blue-600 transition-all shadow-md flex items-center justify-center gap-2 px-6;
+  }
+
+  /* NÚT PHỤ (Secondary Button) - Dùng cho nút Hủy hoặc Đăng ký */
+  /* Viền 3px đen, Chữ đen, Nền trắng */
+  .btn-secondary {
+    @apply h-[50px] bg-white border-[3px] border-[#181821] text-[#181821] font-bold text-[16px] rounded-[10px] hover:bg-gray-100 transition-all flex items-center justify-center gap-2 px-6;
+  }
+
+  /* CARD TRUYỆN - Chuẩn file trang chu.txt */
+  /* Nền #DEE5ED, Bo góc 10px */
+  .story-card {
+    @apply bg-[#DEE5ED] rounded-[10px] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300;
+  }
+}

@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>API Quick Test</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    button { margin: 4px 0; display:block; }
+    pre { background:#f4f4f4; padding:10px; border-radius:6px; max-height:250px; overflow:auto;}
+  </style>
+</head>
+<body>
+  <h2>API Quick Test</h2>
+
+  <div>
+    <h3>Auth</h3>
+    <input id="reg_username" placeholder="username" value="admin" />
+    <input id="reg_email" placeholder="email" value="admin@example.com" />
+    <input id="reg_pass" placeholder="password" value="pass123" />
+    <button id="btnRegister">Register</button>
+
+    <input id="login_user" placeholder="user/email" value="admin" />
+    <input id="login_pass" placeholder="password" value="pass123" />
+    <button id="btnLogin">Login</button>
+
+    <button id="btnProfile">Get Profile (auth)</button>
+  </div>
+
+  <div>
+    <h3>Stories</h3>
+    <button id="btnGetStories">Get Stories</button>
+    <input id="new_title" placeholder="Story title" value="Truyen demo" />
+    <button id="btnCreateStory">Create Story (admin)</button>
+  </div>
+
+  <div>
+    <h3>Actions</h3>
+    <input id="fav_story_id" placeholder="story_id" value="1" />
+    <button id="btnFav">Add Favorite</button>
+
+    <input id="rate_story_id" placeholder="story_id" value="1" />
+    <input id="rate_score" placeholder="score" value="5" />
+    <input id="rate_comment" placeholder="comment" value="Hay!" />
+    <button id="btnRate">Add Rating</button>
+  </div>
+
+  <h3>Response</h3>
+  <pre id="output">Ready</pre>
+
+<script>
+const out = document.getElementById('output');
+function log(v) { out.textContent = JSON.stringify(v, null, 2); }
+
+// small client using fetch pointing to /api (adjust if backend different origin)
+const API_BASE = '/api';
+
+function getToken() { return localStorage.getItem('token'); }
+function setToken(t) { localStorage.setItem('token', t); }
+
+async function rawRequest(path, opts = {}) {
+  const headers = opts.headers || {};
+  if (opts.body && !(opts.body instanceof FormData)) headers['Content-Type'] = 'application/json';
+  if (opts.auth) {
+    const token = getToken();
+    if (!token) throw new Error('No token stored');
+    headers['Authorization'] = 'Bearer ' + token;
+  }
+  const res = await fetch(API_BASE + path, { method: opts.method || 'GET', headers, body: opts.body && !(opts.body instanceof FormData) ? JSON.stringify(opts.body) : opts.body });
+  const txt = await res.text();
+  let data;
+  try { data = JSON.parse(txt); } catch(e) { data = txt; }
+  if (!res.ok) throw { status: res.status, data };
+  return data;
+}
+
+// handlers
+document.getElementById('btnRegister').onclick = async () => {
+  try {
+    const username = document.getElementById('reg_username').value;
+    const email = document.getElementById('reg_email').value;
+    const password = document.getElementById('reg_pass').value;
+    const data = await rawRequest('/auth/register', { method: 'POST', body: { username, email, password } });
+    if (data.token) setToken(data.token);
+    log(data);
+  } catch (err) { log(err); }
+};
+
+document.getElementById('btnLogin').onclick = async () => {
+  try {
+    const usernameOrEmail = document.getElementById('login_user').value;
+    const password = document.getElementById('login_pass').value;
+    const data = await rawRequest('/auth/login', { method: 'POST', body: { usernameOrEmail, password } });
+    if (data.token) setToken(data.token);
+    log(data);
+  } catch (err) { log(err); }
+};
+
+document.getElementById('btnProfile').onclick = async () => {
+  try { const data = await rawRequest('/auth/me', { auth: true }); log(data);} catch (e){ log(e); }
+};
+
+document.getElementById('btnGetStories').onclick = async () => {
+  try { const data = await rawRequest('/stories'); log(data); } catch(e){ log(e); }
+};
+
+document.getElementById('btnCreateStory').onclick = async () => {
+  try {
+    const title = document.getElementById('new_title').value;
+    const body = { title, author: 'Frontend', summary: 'Test', status: 'Đang tiến hành', genre_ids: [] };
+    const data = await rawRequest('/stories', { method: 'POST', auth: true, body });
+    log(data);
+  } catch (e) { log(e); }
+};
+
+document.getElementById('btnFav').onclick = async () => {
+  try {
+    const story_id = parseInt(document.getElementById('fav_story_id').value);
+    const data = await rawRequest('/favorites', { method: 'POST', auth: true, body: { story_id } });
+    log(data);
+  } catch (e) { log(e); }
+};
+
+document.getElementById('btnRate').onclick = async () => {
+  try {
+    const story_id = parseInt(document.getElementById('rate_story_id').value);
+    const score = parseInt(document.getElementById('rate_score').value);
+    const comment = document.getElementById('rate_comment').value;
+    const data = await rawRequest('/ratings', { method: 'POST', auth: true, body: { story_id, score, comment } });
+    log(data);
+  } catch (e) { log(e); }
+};
+</script>
+</body>
+</html>
