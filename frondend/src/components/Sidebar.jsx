@@ -15,7 +15,7 @@ const Sidebar = () => {
       ${active ? 'bg-primary text-white shadow-lg shadow-blue-200' : 'text-dark hover:bg-white'}`}
     >
       <Icon size={24} strokeWidth={2.5} />
-    </Link>
+    </Link> 
   );
 
   return (

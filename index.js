@@ -1,46 +1,51 @@
-// // npm install -g yarn
-// // npm init
-// // cài các thư viện :
-// //  npm install mysql2
-// // npm install sequelize 
-// //  npm install sequelize-cli
-
-// // tạo cấu trúc sequelize init:
-// // npx sequelize-cli init
-
-//     // npx sequelize-cli model:generate --name Ratings --attributes rating_id:integer,user_id:integer,story_id:integer,added_at:date
-
-// // npx sequelize-cli model:generate --name Users --attributes username:string,email:string,password_hash:string,phone_number:string,full_name:string,date_of_birth:date,gender:string,avatar_url:string,is_admin:boolean,created_at:date
-// // npx sequelize-cli model:generate --name Genres --attributes name:string
-// // npx sequelize-cli model:generate --name Stories --attributes title:string,author:string,cover_image_url:string,summary:text,status:string,created_by_user_id:integer,rating_average:decimal,total_ratings:integer,view_count:integer,is_exclusive:boolean,published_at:date
-// // npx sequelize-cli model:generate --name Chapters --attributes story_id:integer,chapter_number:integer,title:string,content:text,published_at:date
-// // npx sequelize-cli model:generate --name Story_Genres --attributes story_id:integer,genre_id:integer
-// // npx sequelize-cli model:generate --name Reading_History --attributes user_id:integer,story_id:integer,last_chapter_read_id:integer,last_read_at:date
-// // npx sequelize-cli model:generate --name Favorites --attributes user_id:integer,story_id:integer,added_at:date
-
-
-
-// // cài đặt express
-// // npm install express
-// // npm install dotenv nodemon
-import express from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import AppRouter from './routes/AppRouter.js';
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import helmet from "helmet";
+import path from "path";
+import { fileURLToPath } from "url";
+import fs from "fs";
+import AppRouter from "./routes/AppRouter.js";
 
 dotenv.config();
+
+// Cấu hình đường dẫn cho ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Tạo thư mục uploads nếu chưa có (để tránh lỗi khi start)
+const uploadDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// 1. Bảo mật HTTP headers (Cho phép load ảnh từ cùng domain)
+app.use(helmet({ crossOriginResourcePolicy: false }));
+
+// 2. Cấu hình CORS (Cho phép Frontend gọi API)
+app.use(
+  cors({
+    origin: true, // Cho phép tất cả hoặc set cụ thể 'http://localhost:5173'
+    credentials: true,
+  })
+);
+
+// 3. Parser dữ liệu JSON và Form
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// 4. Public thư mục uploads (Để Frontend hiển thị được ảnh)
+// Truy cập: http://localhost:3000/uploads/ten-anh.jpg
+app.use("/uploads", express.static(uploadDir));
+
+// 5. Khởi tạo Routes
 AppRouter(app);
 
-app.get('/', (req, res) => res.json({ ok: true }));
-
+// 6. Start Server
 app.listen(PORT, () => {
-  console.log(`Server listening on http://localhost:${PORT}`);
+  console.log(`🚀 Server đang chạy tại http://localhost:${PORT}`);
+  console.log(`📂 Thư mục upload: ${uploadDir}`);
 });
